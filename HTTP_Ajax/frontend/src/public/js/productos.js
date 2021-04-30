@@ -12,18 +12,18 @@ class Interfaz {
      
          
         const fila = '<tr id="pr'+ product.id + '">   '
-                +    '<td id="nombre '+ product.nombre + '"> ' + product.nombre + '</td>'
-                +    '<td id="precio '+ product.precio+ '"> ' + product.precio + '</td>'
-                +    '<td id="anio '+ product.anio + '"> ' + product.anio + '</td>'
-                +    '<td>'
+                +    '<td id="nombre'+ product.id + '"> ' + product.nombre + '</td>    '   
+                +    '<td id="precio'+ product.id+ '"> ' + product.precio + '</td>     '
+                +    '<td id="anio'+ product.id + '"> ' + product.anio + '</td>          '
+                +    '<td>                                                                  '
                 +    '  <a href="#" class="btn btn-danger btn-sm mt-3" name="borrar"        '
-                +    '  id=delete'+ product.id  + '>Borrar</a>'
-                +    '  <a href="#" class="btn btn-success btn-sm mt-3" '
-                +    '  data-toggle="modal" data-target="miModal"       '
-                +    '  name="editar"        '
-                +    '  id=edit'+ product.id  + '>Editar</a>'
-                +    '</td>'
-                +    '</tr>' 
+                +    '  id=delete'+ product.id  + '>Borrar</a>                              '
+                +    '  <a href="#" class="btn btn-success btn-sm mt-3"                     '
+        
+                +    '  name="editar"                                                       '
+                +    '  id=edit'+ product.id  + '>Editar</a>                                '
+                +    '</td>                                                                 '
+                +    '</tr>                                                                 ' 
                 ;
 
                 //Producto: id=1, nombre="mouse" precio=120 anio=2021
@@ -38,21 +38,25 @@ class Interfaz {
 
     deleteProduct(id){
         var product = "#pr"+id;
+        alert(product);
         $(product).remove();
+        
         
 
     }//fin de deleteProduct
 
 
     editProduct(id){
-        //console.log(id);
-
+       
         //obtenemos los datos del producto
-        var nombre = $("#nombre"+id).text().trim();
+        var nombre = $("#nombre"+id).text();
         var precio = $("#precio"+id).text().trim();
         var anio = $("#anio"+id).text().trim();
-        console.log(nombre + "" + precio + "" + anio );
         $("#miModal").modal("show");
+        $("input[name=modalIdProducto]").val(""+id);
+        $("#modalNombre").val(nombre);
+        $("#modalPrecio").val(precio);
+        $("#modalAnio").val(anio);
 
     }//fin de editProduc
 
@@ -160,10 +164,10 @@ $(() =>{
 
 
 
-            
-            $("#listado").on('click', '.btn.btn-outline-danger', (event)=>{
+            //EVENTO BORRAR 
+            $("#listado").on('click', '.btn.btn-danger', (event)=>{
                 //obtener el id del boton que se hizo click
-                
+                alert("DIste click")
                 var id  = event.target.id;
                 id = id.slice(6); // elimina los n primeros caracteres
                 alert(id)
@@ -174,13 +178,13 @@ $(() =>{
                         'ContentType': 'Application/JSON'
                     },
                     success: (res)=> {
-                    
                         interfaz.message("Producto elminiado",'warnign')
-                        
+                        interfaz.deleteProduct(id);
                     },
                     error:(res) =>{
                         interfaz.message("Ocurrio un error",'danger')
                     }
+                    
                 });//fin del ajax
             })//fin del evento borrar
 
@@ -189,12 +193,11 @@ $(() =>{
 
 
             //evento update
-            $("#listado").on('click', '.btn.btn-outline-success', (event)=>{
+            $("#listado").on('click', '.btn.btn-success', (event)=>{
                 //obtenemos el id del boton que se hizo clic
                 var id = event.target.id;
-                id = id.slice(4);
-
-                //editar el producto del id
+                id = id.slice(4)
+               //editar el producto del id
                 interfaz.editProduct(id);
 
                 //evitamos que se recarge la pagina
@@ -203,6 +206,54 @@ $(() =>{
 
             })//fin del evento update
 
+            //evento del click en el btn de guardar cambios del modal
+            $("#guardarModal").on('click',function(){
+                const id = $("input[name=modalIdProducto]").val();
+                const nombre = $("#modalNombre").val();
+                const precio = $("#modalPrecio").val();
+                const anio = $("#modalAnio").val();
+                console.log(nombre + "" + precio + "" + anio)
+                const producto = new Producto(id,nombre,precio,anio);
 
+                //modificar la base de datos
+                $.ajax({
+                    url:'http://localhost:3000/api/productos/'+id,
+                    method: 'PUT',
+                    headers: {
+                        'ContentType':'Application/JSON'
+                    },
+                    success: (res)=> {
+
+                        producto.id = res.product._id;
+                        console.log(id)
+                        //Actualizmamos el producto
+                        $("#nombre"+id).text(nombre);
+                        $("#precio"+id).text(precio);
+                        $("#anio"+id).text(anio);
+                        console.log(nombre + "" + precio + "" + anio)
+                        
+                        //cerrar el modal
+                        $("#miModal").modal("hide");
+                      
+                        interfaz.message("Producto actualizado correctamente","success")
+                    },
+                    error:(res) =>{
+                        interfaz.message("Ocurrio un error",'danger')
+                    }
+                    
+                });//fin del ajax
+            })
+            //fin del guardar modal
+
+            //evento de cerrar modal
+            $("#cerrarModal").on('click',function(){
+                $("#miModal").modal('hide')
+            })//fin del evento cerrar modal
+
+                        //evento de cerrar modal
+                        $(".close").on('click',function(){
+                            $("#miModal").modal('hide')
+                        })//fin del evento cerrar modal
+                        
  })
        
