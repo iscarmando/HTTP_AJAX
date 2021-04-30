@@ -11,15 +11,17 @@ class Interfaz {
     addProduct(product){
      
          
-        const fila = '<tr id="pr' + product.id + '">   '
+        const fila = '<tr id="pr'+ product.id + '">   '
                 +    '<td id="nombre '+ product.nombre + '"> ' + product.nombre + '</td>'
                 +    '<td id="precio '+ product.precio+ '"> ' + product.precio + '</td>'
                 +    '<td id="anio '+ product.anio + '"> ' + product.anio + '</td>'
                 +    '<td>'
                 +    '  <a href="#" class="btn btn-danger btn-sm mt-3" name="borrar"        '
-                +    '  id='+ product.id  + '>Borrar</a>'
-                +    '  <a href="#" class="btn btn-success btn-sm mt-3" name="editar"        '
-                +    '  id='+ product.id  + '>Editar</a>'
+                +    '  id=delete'+ product.id  + '>Borrar</a>'
+                +    '  <a href="#" class="btn btn-success btn-sm mt-3" '
+                +    '  data-toggle="modal" data-target="miModal"       '
+                +    '  name="editar"        '
+                +    '  id=edit'+ product.id  + '>Editar</a>'
                 +    '</td>'
                 +    '</tr>' 
                 ;
@@ -35,14 +37,24 @@ class Interfaz {
 
 
     deleteProduct(id){
+        var product = "#pr"+id;
+        $(product).remove();
         
 
     }//fin de deleteProduct
 
 
     editProduct(id){
+        //console.log(id);
 
-    }//fin de editProduct
+        //obtenemos los datos del producto
+        var nombre = $("#nombre"+id).text().trim();
+        var precio = $("#precio"+id).text().trim();
+        var anio = $("#anio"+id).text().trim();
+        console.log(nombre + "" + precio + "" + anio );
+        $("#miModal").modal("show");
+
+    }//fin de editProduc
 
     //tipo de mensaje puede ser success, warning , danger
     message(message,type){
@@ -91,7 +103,10 @@ $(() =>{
                     
                 })//fin del ajax
             });//fin de cargar los productos de la base de datos
+ 
             
+
+
             //evento que maneja click en el boton de guardar del formulario
             $("#boton").on('click', function(event){
                 //alert("Funciona");
@@ -142,11 +157,15 @@ $(() =>{
                 }//else
             })//fin del evento del boton agregar producto
 
+
+
+
             
-            $("#listado").on('click', '.btn.btn-danger', (event)=>{
+            $("#listado").on('click', '.btn.btn-outline-danger', (event)=>{
                 //obtener el id del boton que se hizo click
                 
-                var id  = $(".btn.btn-danger").attr('id');
+                var id  = event.target.id;
+                id = id.slice(6); // elimina los n primeros caracteres
                 alert(id)
                 $.ajax({
                     url:'http://localhost:3000/api/productos/'+id,
@@ -163,32 +182,24 @@ $(() =>{
                         interfaz.message("Ocurrio un error",'danger')
                     }
                 });//fin del ajax
-               
-
             })//fin del evento borrar
 
+
+
+
+
             //evento update
-            $("#listado").on('click', '.btn.btn-success', (event)=>{
-                //obtener el id del boton que se hizo click
-                
-                var id  = $(".btn.btn-success").attr('id');
-                alert(id)
-                $.ajax({
-                    url:'http://localhost:3000/api/productos/'+id,
-                    method: 'POST',
-                    headers: {
-                        'ContentType': 'Application/JSON'
-                    },
-                    success: (res)=> {
-                    
-                        interfaz.message("Producto elminiado",'warnign')
-                        
-                    },
-                    error:(res) =>{
-                        interfaz.message("Ocurrio un error",'danger')
-                    }
-                });//fin del ajax
-               
+            $("#listado").on('click', '.btn.btn-outline-success', (event)=>{
+                //obtenemos el id del boton que se hizo clic
+                var id = event.target.id;
+                id = id.slice(4);
+
+                //editar el producto del id
+                interfaz.editProduct(id);
+
+                //evitamos que se recarge la pagina
+                event.preventDefault();
+
 
             })//fin del evento update
 
